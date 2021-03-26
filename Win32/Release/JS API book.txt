@@ -1,0 +1,146 @@
+/** 设置超时 */
+void setHttpTimeout(int second);
+
+
+/** 设置请求头 */
+void setRequestHeader(string key, string value);
+
+
+/** 设置浏览器标识 */
+void setUserAgent(string val);
+
+
+/** 设置自定义方法:POST GET PUT DELETE 等，一般不用设置 */
+void setCustomMothod(string mothod);
+
+
+/**
+设置进度回调函数
+progressCallbackName进度回调函数原型为：
+function progressCallbackName(
+	double dltotal,
+	double dlnow,
+	double ultotal,
+	double ulnow,
+	string userData)
+*/
+void setProgress(string progressCallbackName, string userData);
+
+
+/** 设置是否自动重定向 */
+void setAutoRedirect(bool autoRedirect)；
+
+
+/** 设置自动重定向最大次数 */
+void setMaxRedirect(int maxRedirect);
+
+
+/** GET */
+int get(string url);
+
+
+/**
+带结构参数的GET
+params参数格式为：
+{
+	"field1" : "value1",
+	"field2" : "value2"
+}
+*/
+int get_a(string url, JsonObj params);
+
+
+/** POST */
+int post(string url, string content, string contentType);
+
+
+/**
+带结构参数的POST
+params参数格式为：
+{
+	"field1" : "value1",
+	"field2" : "value2"
+}
+*/
+int post_a(string url, JsonObj params);
+
+
+/**
+提交表单：
+fieldsJsonStr的格式为：
+'[
+	{
+		"name" : "field1", 
+		"value" : "text1", 
+		"type" : 0 //0为普通字段（可选）
+	 },
+
+	{
+		"type" : 1, //1为文件字段（必选）
+		"name" : "file", 
+		"value" : "C:/1.txt", //文件路径
+		"fileName" : "1.txt" //文件名（可选）
+	},
+]' ---- 注意：这是一个字符串
+*/
+int postForm(string url, string fieldsJsonStr);
+
+
+/** 下载文件 */
+int download(string url, string localFileName);
+
+
+/** 获得返回的内容 */
+string getBody();
+
+
+/** 获得返回的代码 */
+int getCode();
+
+
+/** 获得返回的头，多个头使用换行符隔开 */
+string getResponseHeader(string key);
+
+
+/** URL在GB2312下编码 */
+string urlGB2312Encode(string strIn);
+
+
+/** URL在GB2312下解码 */
+string urlGB2312Decode(string strIn);
+
+
+/** URL在UTF8下编码 */
+string urlUTF8Encode(string strIn);
+
+
+/** URL在UTF8下解码 */
+string urlUTF8Decode(string strIn);
+
+
+/** utf8ToAnsi */
+string utf8ToAnsi(string strIn);
+
+
+/** ansiToUTF8 */
+string ansiToUTF8(string strIn);
+
+
+/** 打印调试 */
+void print(string text);
+
+
+/** 读取文本文件内容 */
+string readText(string path);
+
+
+/** 写文本文件，如果存在则覆盖写 */
+int writeText(string path, string writeContent);
+
+
+/** 写文本文件，如果存在则以添加的方式写 */
+int appendText(string path, string writeContent);
+
+
+/** 包含文件 */
+void include(string file1, string file2, ..., [bool canReInclude]);
