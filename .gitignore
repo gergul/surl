@@ -1,7 +1,6 @@
 /.vs
 /Win32/Debug/surl.exe
 /Win32/Debug/*.ilk
-/Win32/Release/surl.exe
 /surl.VC.db
 /surl/Win32
 /surl/surl.vcxproj.user
