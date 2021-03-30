@@ -22,5 +22,5 @@ include("surl_config.js", "test_get.js", "common\get.js", "common\log.js");
 例如：下载文件用例 中可以在一个test_d.sl文件中写：
 include("surl_config.js");
 P.url="https://www.baidu.com";
-include("common\get.js", "common\dump.js");
+include("common\\get.js", "common\\dump.js");
 
