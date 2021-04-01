@@ -250,13 +250,13 @@ void js_print(const char* text)
 
 std::string js_readText(const char * path)
 {
-	return readText(path);
+	return readText(HTTP_CLIENT::Ins().UTF8ToAnsi(path));
 }
 
 size_t js_writeText(const char * path, const char * writeContent)
 {
-	size_t in_outLen = strlen(writeContent);
-	return writeFile(path, writeContent, in_outLen, 0, false, true);
+	size_t in_outLen = strlen(writeContent);	
+	return writeFile(HTTP_CLIENT::Ins().UTF8ToAnsi(path), writeContent, in_outLen, 0, false, true);
 }
 
 size_t js_appendText(const char * path, const char * writeContent)
@@ -327,18 +327,19 @@ duk_ret_t js_include(duk_context * ctx)
 				//mark as included
 				sprintf(sIncludeJs, "var %s=true;", sIncludeName.c_str());
 				dukglue_peval<DukValue>(ctx, sIncludeJs);
-
 			}
 			catch (const std::exception& e)
 			{
 				printf("Include error (%s)\n[ %s ]\n", sFileInclude.c_str(), e.what());
-				return 0;
+				dukglue_push(ctx, false);
+				return 1;
 			}
 		} while (0);
 
 	}
 
-	return 0;
+	dukglue_push(ctx, true);
+	return 1;
 }
 
 typedef struct ParamsInfo
@@ -414,15 +415,6 @@ int main(int argc, char** argv)
 		dukglue_register_function(ctx, &js_appendText,			"appendText");
 		dukglue_register_primitive_function(ctx, &js_include,	"include");
 
-		//dukglue_peval<int>(ctx, "post_a('https://www.baidu.com/', {'a':'a','b':'b'})");
-		//dukglue_peval<int>(ctx, "post('https://www.baidu.com/', '123', 'application/x-www-form-urlencoded')");
-		//dukglue_peval<int>(ctx, "postForm('https://www.baidu.com/', '[{\"name\":\"field1\",\"value\":\"text1\",\"type\":0},{\"type\":1,\"name\":\"file\",\"value\":\"C:/1.txt\",\"fileName\":\"1.txt\"}]')");
-		//dukglue_peval<int>(ctx, "get('https://www.baidu.com/')");
-		//std::string s = dukglue_peval<std::string>(ctx, "getResponseHeader('Set-Cookie')");
-		//dukglue_peval<size_t>(ctx, "appentText('e:/1.txt', '1234567890')");
-		//std::string s = dukglue_peval<std::string>(ctx, "readText('e:/1.txt')");
-
-		
 		//Ö´ÐÐ½Å±¾
 		for (int i = 0; i < vctParams.size(); ++i)
 		{
