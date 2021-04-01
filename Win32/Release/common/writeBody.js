@@ -1,10 +1,16 @@
 
-var ready = true;
-if(P.bodyToFile == undefined || P.bodyToFile == null || P.bodyToFile == ""){
-    print('变量未定义:P.bodyToFile\n');
-	ready = false;
+function showUsage() {
+	print("P.bodyToFile   : string 必须\n");
 }
 
-if (ready) {
+(function() {
+	if (typeof(P) == "undefined" 
+	 || typeof(P.bodyToFile) == "undefined"
+	) {
+		showUsage();
+		return;
+	}
+
 	writeText(P.bodyToFile, getBody());
-}
+
+})();

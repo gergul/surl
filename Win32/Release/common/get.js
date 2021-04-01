@@ -1,23 +1,23 @@
-P.method='GET';
-
-setCustomMothod(P.method);
-
-var ready = true;
-if(P.url == undefined){
-    print('变量未定义:P.url\n');
-	ready = false;
+function showUsage() {
+	print("P.url    : string 必须\n");
+	print("P.params : {string:string,...} 可选\n");
 }
+	
+(function() {
+	if (typeof(P) == "undefined" 
+	 || typeof(P.url) == "undefined"
+	) {
+		showUsage();
+		return;
+	}
+		
+	P.method='GET';
+	setCustomMothod(P.method);	
 
-if (ready) {
 	var httpCode = 0;
 	if(P.params != undefined){
 		httpCode = get_a(P.url, P.params);	
 	} else {
 		httpCode = get(P.url);
 	}
-	/*
-	print('code=' + httpCode.toString() + '\n');
-	if (httpCode == 200) {		
-		print('body=' + getBody() + '\n');
-	}*/
-}
+})();

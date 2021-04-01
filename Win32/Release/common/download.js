@@ -1,16 +1,20 @@
-method='DOWNLOAD';
 
-var ready = true;
-if(P.url == undefined){
-    print('变量未定义:P.url\n');
-	ready = false;
-}
-if(P.file == undefined){
-    print('变量未定义:P.file\n');
-	ready = false;
+function showUsage() {
+	print("P.url    : string 必须\n");
+	print("P.file   : string 必须\n");
 }
 
-if (ready) {
+(function() {
+	if (typeof(P) == "undefined" 
+	 || typeof(P.url) == "undefined"
+	 || typeof(P.file) == "undefined"
+	) {
+		showUsage();
+		return;
+	}
+	
+	P.method='DOWNLOAD';
+
 	var httpCode = download(P.url, P.file);
-	//print('code=' + httpCode.toString() + '\n');
-}
+	
+})();
