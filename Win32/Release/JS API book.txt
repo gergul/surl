@@ -129,6 +129,14 @@ string ansiToUTF8(string strIn);
 /** 打印调试 */
 void print(string text);
 
+/** 命令行输入 */
+string input();
+
+/** 输入窗口 */
+string inputBox(string tip, string defVal, string title);
+
+/** 弹窗 */
+void alert(string text);
 
 /** 读取文本文件内容 */
 string readText(string path);
@@ -144,3 +152,4 @@ int appendText(string path, string writeContent);
 
 /** 包含文件 */
 void include(string file1, string file2, ..., [bool canReInclude]);
+
