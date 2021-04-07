@@ -9,6 +9,10 @@
 #include <sstream>
 #include "LibcurlHttp.h"
 #include <algorithm>
+#include "InputBoxW.h"
+
+#pragma execution_character_set("utf-8")
+
 
 char illegalCharset[127] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -248,6 +252,29 @@ void js_print(const char* text)
 	std::cout << s;
 }
 
+void js_alert(const char* text)
+{
+	std::string s = HTTP_CLIENT::Ins().UTF8ToAnsi(text);
+	MessageBoxA(NULL, s.c_str(), "surl", MB_OK);
+}
+
+std::string js_input()
+{
+	std::string s;
+	std::getline(std::cin, s);
+	s = HTTP_CLIENT::Ins().AnsiToUTF8(s.c_str());
+	return s;
+}
+
+std::string js_inputBox(const char* tip, const char* defVal, const char* title)
+{
+	std::wstring sTip = HTTP_CLIENT::Ins().UTF8ToWidebyte(tip);
+	std::wstring sDefVal = HTTP_CLIENT::Ins().UTF8ToWidebyte(defVal);
+	std::wstring sTitle = HTTP_CLIENT::Ins().UTF8ToWidebyte(title);
+	std::wstring s = _InputBoxW(sTip.c_str(), sTitle.c_str(), sDefVal.c_str());
+	return HTTP_CLIENT::Ins().WidebyteToUTF8(s.c_str());
+}
+
 std::string js_readText(const char * path)
 {
 	return readText(HTTP_CLIENT::Ins().UTF8ToAnsi(path));
@@ -264,7 +291,6 @@ size_t js_appendText(const char * path, const char * writeContent)
 	size_t in_outLen = strlen(writeContent);
 	return writeFile(path, writeContent, in_outLen, -1, true, false);
 }
-
 
 duk_ret_t js_include(duk_context * ctx)
 {
@@ -294,27 +320,30 @@ duk_ret_t js_include(duk_context * ctx)
 		{
 			try
 			{
-				//include once
-				std::string sIncludeName = GetFileNameFromPath(sFileInclude.c_str()).c_str();
-				//过滤掉文件名中不能组成变量的字符
-				for (int c = 0; c < sIncludeName.length(); ++c)
-				{
-					if (0 <= sIncludeName[c] && sIncludeName[c] < 127 && illegalCharset[sIncludeName[c]])
-						sIncludeName[c] = '_';
-				}
-				std::transform(sIncludeName.begin(), sIncludeName.end(), sIncludeName.begin(), ::toupper);
-				sIncludeName = "INCLUDED_" + sIncludeName;
-				char sIncludeJs[1024];
+				char buff[1024];
 
+				std::string sIncludeName = GetFileNameFromPath(sFileInclude.c_str()).c_str();
+				
+				//include once
+				std::string sOnceIncludeName = sIncludeName;
+				//过滤掉文件名中不能组成变量的字符
+				for (int c = 0; c < sOnceIncludeName.length(); ++c)
+				{
+					if (0 <= sOnceIncludeName[c] && sOnceIncludeName[c] < 127 && illegalCharset[sOnceIncludeName[c]])
+						sOnceIncludeName[c] = '_';
+				}
+				std::transform(sOnceIncludeName.begin(), sOnceIncludeName.end(), sOnceIncludeName.begin(), ::toupper);
+				sOnceIncludeName = "INCLUDED_" + sOnceIncludeName;
+				
 				if (!bCanReInclude)
 				{//检测是否已经被包含过
-					sprintf(sIncludeJs,
+					sprintf(buff,
 						"if (typeof %s != 'undefined' && %s)"
 						"	true;"
 						"else"
 						"	false;",
-						sIncludeName.c_str(), sIncludeName.c_str());
-					bool bIncluded = dukglue_peval<bool>(ctx, sIncludeJs);
+						sOnceIncludeName.c_str(), sOnceIncludeName.c_str());
+					bool bIncluded = dukglue_peval<bool>(ctx, buff);
 					if (bIncluded)
 					{
 						break;
@@ -325,8 +354,8 @@ duk_ret_t js_include(duk_context * ctx)
 				dukglue_peval<void>(ctx, readText(sFileInclude.c_str()).c_str());
 
 				//mark as included
-				sprintf(sIncludeJs, "var %s=true;", sIncludeName.c_str());
-				dukglue_peval<DukValue>(ctx, sIncludeJs);
+				sprintf(buff, "var %s=true;", sOnceIncludeName.c_str());
+				dukglue_peval<DukValue>(ctx, buff);
 			}
 			catch (const std::exception& e)
 			{
@@ -410,6 +439,9 @@ int main(int argc, char** argv)
 		dukglue_register_function(ctx, &js_utf8ToAnsi,			"utf8ToAnsi");
 		dukglue_register_function(ctx, &js_ansiToUTF8,			"ansiToUTF8");
 		dukglue_register_function(ctx, &js_print,				"print");
+		dukglue_register_function(ctx, &js_alert,				"alert");
+		dukglue_register_function(ctx, &js_input,				"input");
+		dukglue_register_function(ctx, &js_inputBox,			"inputBox");
 		dukglue_register_function(ctx, &js_readText,			"readText");
 		dukglue_register_function(ctx, &js_writeText,			"writeText");
 		dukglue_register_function(ctx, &js_appendText,			"appendText");

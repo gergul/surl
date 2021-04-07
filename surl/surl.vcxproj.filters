@@ -25,6 +25,9 @@
     <Filter Include="jsoncpp">
       <UniqueIdentifier>{e39f22aa-b460-46c4-8ce3-925e51c8f603}</UniqueIdentifier>
     </Filter>
+    <Filter Include="inputbox">
+      <UniqueIdentifier>{24837547-c68f-4e10-a388-c7abb5d48960}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <Text Include="ReadMe.txt" />
@@ -99,6 +102,9 @@
     <ClInclude Include="..\jsoncpp\src\version.h">
       <Filter>jsoncpp</Filter>
     </ClInclude>
+    <ClInclude Include="InputBoxW.h">
+      <Filter>inputbox</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -121,6 +127,9 @@
     </ClCompile>
     <ClCompile Include="..\jsoncpp\src\json_writer.cpp">
       <Filter>jsoncpp</Filter>
+    </ClCompile>
+    <ClCompile Include="InputBoxW.cpp">
+      <Filter>inputbox</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
