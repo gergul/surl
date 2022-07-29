@@ -129,6 +129,9 @@ string ansiToUTF8(string strIn);
 /** 打印调试 */
 void print(string text);
 
+/** 打印调试（换行） */
+void println(string text);
+
 /** 命令行输入 */
 string input();
 

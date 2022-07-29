@@ -11,7 +11,7 @@
 #include <algorithm>
 #include "InputBoxW.h"
 
-#pragma execution_character_set("utf-8")
+//#pragma execution_character_set("utf-8")
 
 
 char illegalCharset[127] = {
@@ -252,6 +252,12 @@ void js_print(const char* text)
 	std::cout << s;
 }
 
+void js_println(const char* text)
+{
+	std::string s = HTTP_CLIENT::Ins().UTF8ToAnsi(text);
+	std::cout << s << std::endl;
+}
+
 void js_alert(const char* text)
 {
 	std::string s = HTTP_CLIENT::Ins().UTF8ToAnsi(text);
@@ -379,15 +385,15 @@ typedef struct ParamsInfo
 
 int main(int argc, char** argv)
 {
-	if (argc < 2)
-	{
-		printf("surl scriptFile1 [scriptFile2 scriptFile3 ...] [-d define1 -d define2 ...]\n");
-		return 1;
-	}
-
 	std::vector<ParamsInfo> vctParams;
 	for (int i = 1; i < argc; ++i)
 	{
+		if (strcmp(argv[i], "-?") == 0 || strcmp(argv[i], "-help") == 0)
+		{
+			printf("surl scriptFile1 [scriptFile2 scriptFile3 ...] [-d define1 -d define2 ...]\n");
+			return 1;
+		}
+
 		ParamsInfo pi;
 		if (strcmp(argv[i], "-d") == 0)
 		{
@@ -439,6 +445,7 @@ int main(int argc, char** argv)
 		dukglue_register_function(ctx, &js_utf8ToAnsi,			"utf8ToAnsi");
 		dukglue_register_function(ctx, &js_ansiToUTF8,			"ansiToUTF8");
 		dukglue_register_function(ctx, &js_print,				"print");
+		dukglue_register_function(ctx, &js_println,				"println");
 		dukglue_register_function(ctx, &js_alert,				"alert");
 		dukglue_register_function(ctx, &js_input,				"input");
 		dukglue_register_function(ctx, &js_inputBox,			"inputBox");
@@ -449,6 +456,13 @@ int main(int argc, char** argv)
 		dukglue_register_primitive_function(ctx, &js_include,	"include");
 		dukglue_register_primitive_function(ctx, &js_include,	"exec");
 		dukglue_register_primitive_function(ctx, &js_include,	"run");
+
+		//初始化脚本
+		if (IsFileExitst("surl.js"))
+		{
+			std::string sScript = readText("surl.js");
+			dukglue_peval<void>(ctx, sScript.c_str());
+		}
 
 		//执行脚本
 		for (int i = 0; i < vctParams.size(); ++i)
