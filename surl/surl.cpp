@@ -445,7 +445,10 @@ int main(int argc, char** argv)
 		dukglue_register_function(ctx, &js_readText,			"readText");
 		dukglue_register_function(ctx, &js_writeText,			"writeText");
 		dukglue_register_function(ctx, &js_appendText,			"appendText");
+
 		dukglue_register_primitive_function(ctx, &js_include,	"include");
+		dukglue_register_primitive_function(ctx, &js_include,	"exec");
+		dukglue_register_primitive_function(ctx, &js_include,	"run");
 
 		//Ö´ÐÐ½Å±¾
 		for (int i = 0; i < vctParams.size(); ++i)

@@ -47,7 +47,7 @@ params参数格式为：
 	"field2" : "value2"
 }
 */
-int get_a(string url, JsonObj params);
+int get_a(string url, object params);
 
 
 /** POST */
@@ -62,7 +62,7 @@ params参数格式为：
 	"field2" : "value2"
 }
 */
-int post_a(string url, JsonObj params);
+int post_a(string url, object params);
 
 
 /**
@@ -151,5 +151,5 @@ int appendText(string path, string writeContent);
 
 
 /** 包含文件 */
-void include(string file1, string file2, ..., [bool canReInclude]);
+void include/exec/run(string file1, string file2, ..., [bool canReInclude]);
 
