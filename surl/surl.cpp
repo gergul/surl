@@ -388,7 +388,7 @@ int main(int argc, char** argv)
 	std::vector<ParamsInfo> vctParams;
 	for (int i = 1; i < argc; ++i)
 	{
-		if (strcmp(argv[i], "-?") == 0 || strcmp(argv[i], "-help") == 0)
+		if (strcmp(argv[i], "-?") == 0)
 		{
 			printf("surl scriptFile1 [scriptFile2 scriptFile3 ...] [-d define1 -d define2 ...]\n");
 			return 1;
