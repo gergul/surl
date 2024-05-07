@@ -13,6 +13,7 @@
 
 //#pragma execution_character_set("utf-8")
 
+LibcurlHttp* g_http = NULL;
 
 char illegalCharset[127] = {
 	0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
@@ -55,22 +56,22 @@ int ProgressCallback(
 
 void js_setHttpTimeout(int second)
 {
-	HTTP_CLIENT::Ins().setTimeout(second);
+	g_http->setTimeout(second);
 }
 
 void js_setRequestHeader(const char* key, const char* value)
 {
-	HTTP_CLIENT::Ins().setRequestHeader(key, value);
+	g_http->setRequestHeader(key, value);
 }
 
 void js_setUserAgent(const char* val)
 {
-	HTTP_CLIENT::Ins().setUserAgent(val);
+	g_http->setUserAgent(val);
 }
 
 void js_setCustomMothod(const char* mothod)
 {
-	HTTP_CLIENT::Ins().setCustomMothod(mothod);
+	g_http->setCustomMothod(mothod);
 }
 
 /*
@@ -89,16 +90,16 @@ void js_setProgress(const char* progressCallbackName, const char* userData)
 
 void js_setAutoRedirect(bool autoRedirect)
 {
-	HTTP_CLIENT::Ins().setAutoRedirect(autoRedirect);
+	g_http->setAutoRedirect(autoRedirect);
 }
 void js_setMaxRedirect(int maxRedirect)
 {
-	HTTP_CLIENT::Ins().setMaxRedirect(maxRedirect);
+	g_http->setMaxRedirect(maxRedirect);
 }
 
 int js_get(const char* url)
 {
-	return HTTP_CLIENT::Ins().get(validUrl(url).c_str());
+	return g_http->get(validUrl(url).c_str());
 }
 
 int js_get_a(const char* url, const std::map<std::string, std::string>& params)
@@ -111,12 +112,12 @@ int js_get_a(const char* url, const std::map<std::string, std::string>& params)
 		sParam += p->first + "=" + p->second;
 	}
 	std::string sUrl = validUrl(url) + std::string("?") + sParam;
-	return HTTP_CLIENT::Ins().get(sUrl.c_str());
+	return g_http->get(sUrl.c_str());
 }
 
 int js_post(const char* url, const char* content, const char* contentType)
 {
-	return HTTP_CLIENT::Ins().post(validUrl(url).c_str(), content, strlen(content), contentType);
+	return g_http->post(validUrl(url).c_str(), content, strlen(content), contentType);
 }
 
 int js_post_a(const char* url, const std::map<std::string, std::string>& params)
@@ -129,15 +130,15 @@ int js_post_a(const char* url, const std::map<std::string, std::string>& params)
 		sParam += p->first + "=" + p->second;
 	}
 
-	return HTTP_CLIENT::Ins().post(validUrl(url).c_str(), sParam.data(), sParam.size(), "application/x-www-form-urlencoded");
+	return g_http->post(validUrl(url).c_str(), sParam.data(), sParam.size(), "application/x-www-form-urlencoded");
 }
 
 /*
 [
 	{
-		"name" : "field1", 
-		"value" : "text1", 
-		"type" : 0 //0为普通字段（可选）
+		"type" : 0, //0为普通字段（可选）
+		"name" : "field1",
+		"value" : "text1"
 	 },
 
 	{
@@ -159,7 +160,7 @@ int js_postForm(const char* url, const char* fieldsJsonStr)
 		return -2;
 
 	int nFieldCount = js.size();
-	FORM_FIELD* formFields = new FORM_FIELD[nFieldCount];
+	FormField* formFields = new FormField[nFieldCount];
 
 	for (int i = 0; i < js.size(); ++i)
 	{
@@ -176,45 +177,55 @@ int js_postForm(const char* url, const char* fieldsJsonStr)
 			if (js[i]["fileName"].isString())
 				sFileName = js[i]["fileName"].asString();
 		}
-		FillFormField(formFields[i], ftype, js[i]["name"].asCString(), js[i]["value"].asCString(), sFileName.c_str());
+		formFields[i].Fill((FieldType)ftype, js[i]["name"].asCString(), js[i]["value"].asCString(), sFileName.c_str());
 	}
 	
 	int code = 0;
 	if (nFieldCount > 0)
-		code = HTTP_CLIENT::Ins().postForm(validUrl(url).c_str(), formFields, nFieldCount);
+		code = g_http->postForm(validUrl(url).c_str(), formFields, nFieldCount);
 
 	delete[] formFields;
 
 	return code;
 }
 
+int js_put(const char* url, const std::string& data)
+{
+	return g_http->putData(url, (const unsigned char*)data.c_str(), data.size());
+}
+
+int js_putFile(const char* url, const char* file)
+{
+	return g_http->putFile(url, file);
+}
+
 int js_download(const char* url, const char* localFileName)
 {
-	return HTTP_CLIENT::Ins().download(validUrl(url).c_str(), localFileName);
+	return g_http->download(validUrl(url).c_str(), localFileName);
 }
 
 std::string js_getBody()
 {
 	int len = 0;
-	const char* pBody = HTTP_CLIENT::Ins().getBody(len);
+	const char* pBody = g_http->getBody(len);
 	return std::string(pBody, len);
 }
 
 int js_getCode()
 {
-	return HTTP_CLIENT::Ins().getCode();
+	return g_http->getCode();
 }
 
 std::string js_getResponseHeader(const char* key)
 {
 	std::string sValues = "";
 
-	int nValCount = HTTP_CLIENT::Ins().getResponseHeadersCount(key);
+	int nValCount = g_http->getResponseHeadersCount(key);
 	for (int i = 0; i < nValCount; ++i)
 	{
 		if (sValues != "")
 			sValues += "\n";
-		sValues += HTTP_CLIENT::Ins().getResponseHeader(key, i);
+		sValues += g_http->getResponseHeader(key, i);
 	}
 
 	return sValues;
@@ -222,45 +233,45 @@ std::string js_getResponseHeader(const char* key)
 
 const char* js_urlGB2312Encode(const char * strIn)
 {
-	return HTTP_CLIENT::Ins().UrlGB2312Encode(strIn);
+	return g_http->UrlGB2312Encode(strIn);
 }
 const char* js_urlGB2312Decode(const char * strIn)
 {
-	return HTTP_CLIENT::Ins().UrlGB2312Decode(strIn);
+	return g_http->UrlGB2312Decode(strIn);
 }
 const char* js_urlUTF8Encode(const char * strIn)
 {
-	return HTTP_CLIENT::Ins().UrlUTF8Encode(strIn);
+	return g_http->UrlUTF8Encode(strIn);
 }
 const char* js_urlUTF8Decode(const char * strIn)
 {
-	return HTTP_CLIENT::Ins().UrlUTF8Decode(strIn);
+	return g_http->UrlUTF8Decode(strIn);
 }
 const char* js_utf8ToAnsi(const char * strIn)
 {
-	return HTTP_CLIENT::Ins().UTF8ToAnsi(strIn);
+	return g_http->UTF8ToAnsi(strIn);
 }
 const char* js_ansiToUTF8(const char * strIn)
 {
-	return HTTP_CLIENT::Ins().AnsiToUTF8(strIn);
+	return g_http->AnsiToUTF8(strIn);
 }
 
 
 void js_print(const char* text)
 {
-	std::string s = HTTP_CLIENT::Ins().UTF8ToAnsi(text);
+	std::string s = g_http->UTF8ToAnsi(text);
 	std::cout << s;
 }
 
 void js_println(const char* text)
 {
-	std::string s = HTTP_CLIENT::Ins().UTF8ToAnsi(text);
+	std::string s = g_http->UTF8ToAnsi(text);
 	std::cout << s << std::endl;
 }
 
 void js_alert(const char* text)
 {
-	std::string s = HTTP_CLIENT::Ins().UTF8ToAnsi(text);
+	std::string s = g_http->UTF8ToAnsi(text);
 	MessageBoxA(NULL, s.c_str(), "surl", MB_OK);
 }
 
@@ -268,28 +279,28 @@ std::string js_input()
 {
 	std::string s;
 	std::getline(std::cin, s);
-	s = HTTP_CLIENT::Ins().AnsiToUTF8(s.c_str());
+	s = g_http->AnsiToUTF8(s.c_str());
 	return s;
 }
 
 std::string js_inputBox(const char* tip, const char* defVal, const char* title)
 {
-	std::wstring sTip = HTTP_CLIENT::Ins().UTF8ToWidebyte(tip);
-	std::wstring sDefVal = HTTP_CLIENT::Ins().UTF8ToWidebyte(defVal);
-	std::wstring sTitle = HTTP_CLIENT::Ins().UTF8ToWidebyte(title);
+	std::wstring sTip = g_http->UTF8ToWidebyte(tip);
+	std::wstring sDefVal = g_http->UTF8ToWidebyte(defVal);
+	std::wstring sTitle = g_http->UTF8ToWidebyte(title);
 	std::wstring s = _InputBoxW(sTip.c_str(), sTitle.c_str(), sDefVal.c_str());
-	return HTTP_CLIENT::Ins().WidebyteToUTF8(s.c_str());
+	return g_http->WidebyteToUTF8(s.c_str());
 }
 
 std::string js_readText(const char * path)
 {
-	return readText(HTTP_CLIENT::Ins().UTF8ToAnsi(path));
+	return readText(g_http->UTF8ToAnsi(path));
 }
 
 size_t js_writeText(const char * path, const char * writeContent)
 {
 	size_t in_outLen = strlen(writeContent);	
-	return writeFile(HTTP_CLIENT::Ins().UTF8ToAnsi(path), writeContent, in_outLen, 0, false, true);
+	return writeFile(g_http->UTF8ToAnsi(path), writeContent, in_outLen, 0, false, true);
 }
 
 size_t js_appendText(const char * path, const char * writeContent)
@@ -319,7 +330,7 @@ duk_ret_t js_include(duk_context * ctx)
 			continue;
 
 		//寻找包含目录
-		std::string sFileInclude = pFileName;
+		std::string sFileInclude = g_http->UTF8ToAnsi(pFileName);
 
 		//执行包含
 		do
@@ -385,6 +396,8 @@ typedef struct ParamsInfo
 
 int main(int argc, char** argv)
 {
+	int ret = 0;
+
 	std::vector<ParamsInfo> vctParams;
 	for (int i = 1; i < argc; ++i)
 	{
@@ -414,9 +427,11 @@ int main(int argc, char** argv)
 
 	duk_context *ctx = NULL;
 	ctx = duk_create_heap_default();
+	
+	g_http = HTTP_CLIENT::Ins().CreateHttp();
 
 	//初始化http
-	HTTP_CLIENT::Ins().setProgress(ProgressCallback, ctx);
+	g_http->setProgress(ProgressCallback, ctx);
 
 	std::string sCurScriptFile;
 	try
@@ -434,6 +449,8 @@ int main(int argc, char** argv)
 		dukglue_register_function(ctx, &js_post,				"post");
 		dukglue_register_function(ctx, &js_post_a,				"post_a");
 		dukglue_register_function(ctx, &js_postForm,			"postForm");
+		dukglue_register_function(ctx, &js_put,					"put");
+		dukglue_register_function(ctx, &js_putFile,					"putFile");
 		dukglue_register_function(ctx, &js_download,			"download");
 		dukglue_register_function(ctx, &js_getBody,				"getBody");
 		dukglue_register_function(ctx, &js_getCode,				"getCode");
@@ -474,7 +491,7 @@ int main(int argc, char** argv)
 				sCurScriptFile = pi.data;
 				if (!IsFileExitst(sCurScriptFile))
 				{
-					sCurScriptFile = HTTP_CLIENT::Ins().UTF8ToAnsi(sCurScriptFile.c_str());
+					sCurScriptFile = sCurScriptFile.c_str();
 					if (!IsFileExitst(sCurScriptFile))
 						throw std::exception("脚本不存在。");
 
@@ -485,7 +502,7 @@ int main(int argc, char** argv)
 			else
 			{
 				sCurScriptFile = pi.data;
-				dukglue_peval<void>(ctx, pi.data.c_str());
+				dukglue_peval<void>(ctx, g_http->AnsiToUTF8(pi.data.c_str()));
 			}
 		}		
 	}
@@ -493,15 +510,21 @@ int main(int argc, char** argv)
 	{
 		std::cout << '“' << sCurScriptFile.c_str() << "”出错，出错信息为：" << std::endl
 			<< ex.what() << std::endl;
+		ret = 1;
 	}
 	catch (std::exception ex)
 	{
 		std::cout << '“' << sCurScriptFile.c_str() << "”出错，出错信息为：" << std::endl
 			      << ex.what() << std::endl;
+		ret = 2;
 	}
 
 	duk_destroy_heap(ctx);
-    return 0;
+
+	HTTP_CLIENT::Ins().ReleaseHttp(g_http);
+	g_http = NULL;
+
+    return ret;
 }
 
 size_t writeFile(const char * path, const char * writeContent, size_t & in_outLen, int start/* = -1*/, bool bInsert/* = true*/, bool bDelTail/* = true*/)
@@ -670,7 +693,7 @@ std::string validUrl(const char* url)
 {
 	if (url == NULL)
 		return "";
-	return HTTP_CLIENT::Ins().UTF8ToAnsi(url);
+	return g_http->UTF8ToAnsi(url);
 }
 
 void StringSplit(const std::string & s, const std::string & delim, std::vector<std::string>& ret)

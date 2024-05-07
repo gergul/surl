@@ -9,3 +9,7 @@
 /Win32/Release/surl.ipdb
 /Win32/Release/surl.pdb
 /surl.VC.VC.opendb
+/*.sdf
+/Win32
+/x64
+/surl/x64

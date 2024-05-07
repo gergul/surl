@@ -105,6 +105,9 @@
     <ClInclude Include="InputBoxW.h">
       <Filter>inputbox</Filter>
     </ClInclude>
+    <ClInclude Include="LibcurlHttp.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
